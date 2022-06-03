@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+from pyparsing import one_of
 
 
 class dataCleaner:
@@ -7,8 +8,12 @@ class dataCleaner:
     def __init__(self):
         self._featuresToBeMantainedList = []
         self._featuresToBeOneHotEncoded = []
+        self._featureNeedToRemovePercentageList = []
+        self._featureToBeConvertedFromDateToIntList = []
         self._emp_length_mapDict = None
         self._target_mapDict = None
+        self._dateFormat = None
+        self._oneHotEncoder = None
 
     def addFeatureToBeMantained(self, featureName):
         self._featuresToBeMantainedList.append(featureName)
@@ -23,11 +28,17 @@ class dataCleaner:
     def removePercentageSign(self, data, featureList):
         for feature in featureList:
             data[feature]=data[feature].str.strip('%').astype(float)
+            if feature not in self._featureNeedToRemovePercentageList:
+                self._featureNeedToRemovePercentageList.append(feature)
 
     def convertFromDateToInt(self, data, format, featureList):
+        if self._dateFormat is None:
+            self._dateFormat = format
         for feature in featureList:
             data[feature] = pd.to_datetime(data[feature], format=format)
             data[feature] = pd.DatetimeIndex(data[feature]).astype(np.int64)*1e-9
+            if feature not in self._featureToBeConvertedFromDateToIntList:
+                self._featureToBeConvertedFromDateToIntList.append(feature)
 
     def set_emp_length_mapDict(self, dict):
         self._emp_length_mapDict = dict
@@ -38,15 +49,38 @@ class dataCleaner:
     def addFeatureToBeOneHotEncoded(self, featureName):
         self._featuresToBeOneHotEncoded.append(featureName)
 
+    def setOneHotEncoder(self, encoder):
+        self._oneHotEncoder = encoder
+
     def applyOneHotEncoding(self, data):
-        for feature in self._featuresToBeOneHotEncoded:
-            dummies = pd.get_dummies(data[feature])
-            dummies.drop(dummies.columns[-1],axis=1,inplace=True) #rimuovo una variabile dummy per ogni feature categorica in modo da non avere collinearità
-            data.drop(feature, axis=1, inplace=True) 
-            data = pd.concat([data, dummies], axis=1)
-        return data #il passaggio di parametro per il tipo Dataframe è per valore, non per riferimento, dunque occorre restituire data per vedere gli effetti
+        transformed = self._oneHotEncoder.transform(data)
+        data = pd.DataFrame(transformed.toarray(), columns=self._oneHotEncoder.get_feature_names(), index = data.index)
+        return data
 
     def convertToFloat(self, data):
         for col in data.columns:
             data[col].astype(float)
+
+
+    """
+    cleanData è un metodo pensato per essere usato sul test set.
+    Richiede che gli attributi della classe siano stati già settati in precedenza durante il processamento del training set.
+    """
+    def cleanData(self, data_x, data_y):
+        self.encode_target(data_y)
+
+        numericalFeatureList = [feature for feature in self._featuresToBeMantainedList if feature not in self._featuresToBeOneHotEncoded]
+        data_x_categorical = data_x.loc[:, self._featuresToBeOneHotEncoded]
+        data_x_numerical = data_x.loc[:, numericalFeatureList]
+
+        self.removePercentageSign(data_x_numerical, self._featureNeedToRemovePercentageList)
+        self.convertFromDateToInt(data_x_numerical, self._dateFormat, self._featureToBeConvertedFromDateToIntList)
+        self.encode_emp_length(data_x_numerical)
+        self.convertToFloat(data_x_numerical)
+
+        data_x_categorical = self.applyOneHotEncoding(data_x_categorical)
+
+        data_x = pd.concat([data_x_numerical, data_x_categorical], axis=1)
+        return data_x, data_y
+
 
