@@ -14,6 +14,9 @@ class dataCleaner:
         self._target_mapDict = None
         self._dateFormat = None
         self._oneHotEncoder = None
+        self._imputer = None
+        self._scaler = None
+
 
     def addFeatureToBeMantained(self, featureName):
         self._featuresToBeMantainedList.append(featureName)
@@ -61,6 +64,19 @@ class dataCleaner:
         for col in data.columns:
             data[col].astype(float)
 
+    def set_imputer(self, imputer):
+        self._imputer = imputer
+
+    def fillNaN(self, data):
+        self._imputer.transform(data)
+        return data
+
+    def set_scaler(self, scaler):
+        self._scaler = scaler
+
+    def scaleData(self, data):
+        self._scaler.transform(data)
+        return data
 
     """
     cleanData è un metodo pensato per essere usato sul test set.
@@ -77,10 +93,14 @@ class dataCleaner:
         self.convertFromDateToInt(data_x_numerical, self._dateFormat, self._featureToBeConvertedFromDateToIntList)
         self.encode_emp_length(data_x_numerical)
         self.convertToFloat(data_x_numerical)
+        self.scaleData(data_x_numerical) #TODO Controllare se scalare anche le categoriche in accordo a quello che facciamo sul training
 
         data_x_categorical = self.applyOneHotEncoding(data_x_categorical)
+        
 
         data_x = pd.concat([data_x_numerical, data_x_categorical], axis=1)
+
+        self.fillNaN(data_x)
         return data_x, data_y
 
 
