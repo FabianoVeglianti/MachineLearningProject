@@ -68,7 +68,7 @@ class dataCleaner:
         self._imputer = imputer
 
     def fillNaN(self, data):
-        self._imputer.transform(data)
+        data[:] = self._imputer.transform(data)
         return data
 
     def set_scaler(self, scaler):
