@@ -16,7 +16,7 @@ class dataCleaner:
         self._oneHotEncoder = None
         self._imputer = None
         self._scaler = None
-        self._featureSelector = None
+        self._dimensionalityReductor = None
 
 
     def addFeatureToBeMantained(self, featureName):
@@ -79,12 +79,11 @@ class dataCleaner:
         data = pd.DataFrame(self._scaler.transform(data), columns=data.columns, index=data.index)
         return data
 
-    def set_featureSelector(self, featureSelector):
-        self._featureSelector = featureSelector
+    def set_dimensionalityReductor(self, dimensionalityReductor):
+        self._dimensionalityReductor = dimensionalityReductor
 
-    def applyFeatureSelection(self, data_x):
-        data_x = self._featureSelector.transform(data_x)
-        print(data_x.shape)
+    def applyDimensionalityReduction(self, data_x):
+        data_x = self._dimensionalityReductor.transform(data_x)
         return data_x
 
     """
@@ -101,18 +100,18 @@ class dataCleaner:
         self.removePercentageSign(data_x_numerical, self._featureNeedToRemovePercentageList)
         self.convertFromDateToInt(data_x_numerical, self._dateFormat, self._featureToBeConvertedFromDateToIntList)
         self.encode_emp_length(data_x_numerical)
-        data_x_numerical = self.convertToFloat(data_x_numerical)
-        data_x_numerical = self.scaleData(data_x_numerical) 
-        #TODO Controllare se scalare anche le categoriche in accordo a quello che facciamo sul training
-        print(data_x_numerical.mean())
-
-        data_x_categorical = self.applyOneHotEncoding(data_x_categorical)
-        
+        data_x_numerical = self.convertToFloat(data_x_numerical) 
+    
 
         data_x = pd.concat([data_x_numerical, data_x_categorical], axis=1)
-
         self.fillNaN(data_x)
-        #data_x = self.applyFeatureSelection(data_x)
+        data_x = self.applyOneHotEncoding(data_x)
+        
+
+       #NOTA sul test set adesso non viene fatto scaling e non viene fatta dimensionality reduction
+
+       
+ 
         return data_x, data_y
 
 
