@@ -101,17 +101,14 @@ class dataCleaner:
         self.convertFromDateToInt(data_x_numerical, self._dateFormat, self._featureToBeConvertedFromDateToIntList)
         self.encode_emp_length(data_x_numerical)
         data_x_numerical = self.convertToFloat(data_x_numerical) 
-    
+
+        #sostituire i valori "NONE di home_ownership con "" "
+        data_x_categorical = data_x_categorical.replace('NONE', '')
+        data_x_categorical = self.applyOneHotEncoding(data_x_categorical)
 
         data_x = pd.concat([data_x_numerical, data_x_categorical], axis=1)
         self.fillNaN(data_x)
-        data_x = self.applyOneHotEncoding(data_x)
-        
 
-       #NOTA sul test set adesso non viene fatto scaling e non viene fatta dimensionality reduction
-
-       
- 
         return data_x, data_y
 
 
