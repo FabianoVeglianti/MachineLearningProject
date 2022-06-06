@@ -27,7 +27,7 @@ class dataCleaner:
 
     def encode_target(self, data):
         data.replace(self._target_mapDict, inplace=True)
-        data.loan_status.astype(float)
+        data.loan_status = data.loan_status.astype(float)
 
     def removePercentageSign(self, data, featureList):
         for feature in featureList:
@@ -62,8 +62,8 @@ class dataCleaner:
         return data
 
     def convertToFloat(self, data):
-        for col in data.columns:
-            data[col].astype(float)
+        data = data.astype(float)
+        return data
 
     def set_imputer(self, imputer):
         self._imputer = imputer
@@ -101,7 +101,7 @@ class dataCleaner:
         self.removePercentageSign(data_x_numerical, self._featureNeedToRemovePercentageList)
         self.convertFromDateToInt(data_x_numerical, self._dateFormat, self._featureToBeConvertedFromDateToIntList)
         self.encode_emp_length(data_x_numerical)
-        self.convertToFloat(data_x_numerical)
+        data_x_numerical = self.convertToFloat(data_x_numerical)
         data_x_numerical = self.scaleData(data_x_numerical) 
         #TODO Controllare se scalare anche le categoriche in accordo a quello che facciamo sul training
         print(data_x_numerical.mean())
