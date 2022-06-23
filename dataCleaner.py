@@ -18,6 +18,9 @@ class dataCleaner:
         self._scaler = None
         self._dimensionalityReductor = None
 
+    def removeFeatureToBeMantained(self, featureList):
+        for feature in featureList:
+            self._featuresToBeMantainedList.remove(feature)
 
     def addFeatureToBeMantained(self, featureName):
         self._featuresToBeMantainedList.append(featureName)
