@@ -112,6 +112,7 @@ class dataCleaner:
         data_x = pd.concat([data_x_numerical, data_x_categorical], axis=1)
         self.fillNaN(data_x)
 
+
         return data_x, data_y
 
 

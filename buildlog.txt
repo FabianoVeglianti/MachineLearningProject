@@ -1,0 +1,3 @@
+make: ingresso nella directory «/home/valerio/magistrale/ml/MachineLearningProject/src/born_again_dp»
+make: Nessuna operazione da eseguire per «all».
+make: uscita dalla directory «/home/valerio/magistrale/ml/MachineLearningProject/src/born_again_dp»
